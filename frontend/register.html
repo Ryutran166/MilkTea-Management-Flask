@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Milk Tea Management</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial;
+        }
+
+        body{
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:#f5f5f5;
+        }
+
+        .container{
+            width:400px;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:20px;
+        }
+
+        .form-group{
+            margin-bottom:15px;
+        }
+
+        label{
+            display:block;
+            margin-bottom:5px;
+        }
+
+        input,
+        select{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:5px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            border:none;
+            background:#ff69b4;
+            color:white;
+            font-size:16px;
+            border-radius:5px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            opacity:0.9;
+        }
+
+        .link{
+            margin-top:15px;
+            text-align:center;
+        }
+
+        .message{
+            margin-top:15px;
+            text-align:center;
+            color:red;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>Register</h1>
+
+        <form id="registerForm">
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="phone">
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+
+                <select id="role">
+
+                    <option value="staff">
+                        Staff
+                    </option>
+
+                    <option value="manager">
+                        Manager
+                    </option>
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+                </select>
+            </div>
+
+            <button type="submit">
+                Register
+            </button>
+
+        </form>
+
+        <div class="link">
+            <a href="login.html">
+                Already have account?
+            </a>
+        </div>
+
+        <div class="message" id="message"></div>
+
+    </div>
+
+    <script>
+
+        const form =
+            document.getElementById("registerForm")
+
+        form.addEventListener("submit", async function(e){
+
+            e.preventDefault()
+
+            const full_name =
+                document.getElementById("full_name").value
+
+            const phone =
+                document.getElementById("phone").value
+
+            const username =
+                document.getElementById("username").value
+
+            const password =
+                document.getElementById("password").value
+
+            const role =
+                document.getElementById("role").value
+
+            const response = await fetch(
+                "http://127.0.0.1:5000/register",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+                        full_name,
+                        phone,
+                        username,
+                        password,
+                        role
+                    })
+                }
+            )
+
+            const data = await response.json()
+
+            const message =
+                document.getElementById("message")
+
+            if(data.success){
+
+                message.style.color = "green"
+
+                message.innerText =
+                    "Register successful"
+
+            }else{
+
+                message.style.color = "red"
+
+                message.innerText =
+                    data.message
+            }
+
+        })
+
+    </script>
+
+</body>
+</html>
