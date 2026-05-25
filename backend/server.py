@@ -8,6 +8,8 @@ from pathlib import Path
 from config.db import db
 from routes.auth_route import auth_bp
 from routes.test_route import test_bp
+from routes.branches_route import branches_bp
+
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -85,6 +87,8 @@ def home():
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(test_bp)
+app.register_blueprint(branches_bp)
+
 
 with app.app_context():
     db.create_all()

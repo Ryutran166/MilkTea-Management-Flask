@@ -22,10 +22,14 @@ from utils.auth_utils import (
     verify_password
 )
 
+from middlewares.auth_middleware import role_required
+from models.branch_model import Branch
+
 auth_bp = Blueprint(
     "auth_bp",
     __name__
 )
+
 
 
 # =========================
@@ -279,11 +283,120 @@ def me():
 # =========================
 
 @auth_bp.route(
+    "/users",
+    methods=["POST"]
+)
+@jwt_required()
+@role_required(["admin"])
+def create_user():
+
+    data = request.get_json() or {}
+
+
+
+    username = (data.get("username") or "").strip()
+    password = data.get("password")
+    full_name = (data.get("full_name") or "").strip()
+    phone = (data.get("phone") or "").strip() or None
+    role = (data.get("role") or "").strip()
+    branch_id = data.get("branch_id")
+
+    if not username or not password or not full_name or not role or branch_id is None:
+        return jsonify({
+            "success": False,
+            "message": "Missing required fields: username, password, full_name, role, branch_id"
+        }), 400
+
+    if role not in ["manager", "staff"]:
+        return jsonify({
+            "success": False,
+            "message": "Invalid role. Only 'manager' and 'staff' are allowed"
+        }), 400
+
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({
+            "success": False,
+            "message": "Username already exists"
+        }), 400
+
+    b = Branch.query.get(branch_id)
+    if not b:
+        return jsonify({
+            "success": False,
+            "message": "Branch not found"
+        }), 404
+
+    hashed_password = hash_password(password)
+
+    new_user = User(
+        username=username,
+        password=hashed_password,
+        full_name=full_name,
+        phone=phone,
+        role=role,
+        branch_id=branch_id
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "User created successfully",
+        "data": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "full_name": new_user.full_name,
+            "phone": new_user.phone,
+            "role": new_user.role,
+            "branch_id": new_user.branch_id,
+            "status": new_user.status,
+        }
+    }), 201
+
+
+@auth_bp.route(
+    "/users/<int:user_id>",
+    methods=["GET"]
+)
+@jwt_required()
+@role_required(["admin"])
+def get_user_by_id(user_id: int):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "id": user.id,
+            "username": user.username,
+            "full_name": user.full_name,
+            "phone": user.phone,
+            "role": user.role,
+            "branch_id": user.branch_id,
+            "status": user.status,
+        }
+    }), 200
+
+
+@auth_bp.route(
     "/auth/change-password",
     methods=["PUT"]
 )
 @jwt_required()
 def change_password():
+
+
+
+
+
+
 
     data = request.get_json() or {}
 

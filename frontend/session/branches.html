@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branches</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <div class="profile-container" style="width: 900px;">
+        <h2>Chi nhánh</h2>
+
+        <div id="branches-message" style="margin-bottom: 10px; text-align:center;"></div>
+
+        <div class="section" style="margin-top: 20px;">
+            <h3>Danh sách</h3>
+            <table id="branches-table" border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Phone</th>
+                        <th>Địa chỉ</th>
+                        <th>Status</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section" style="margin-top: 25px;">
+            <h3>Thêm chi nhánh</h3>
+
+            <input id="create-name" type="text" placeholder="Tên" />
+            <input id="create-phone" type="text" placeholder="Phone" />
+            <input id="create-address" type="text" placeholder="Địa chỉ" />
+
+            <select id="create-status">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+            </select>
+
+            <button onclick="createBranch()">Tạo</button>
+        </div>
+
+        <div class="section" style="margin-top: 25px;">
+            <h3>Sửa chi nhánh</h3>
+
+            <input id="edit-id" type="number" placeholder="Branch ID" />
+            <input id="edit-name" type="text" placeholder="Tên (tuỳ chọn)" />
+            <input id="edit-phone" type="text" placeholder="Phone (tuỳ chọn)" />
+            <input id="edit-address" type="text" placeholder="Địa chỉ (tuỳ chọn)" />
+
+            <select id="edit-status">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+            </select>
+
+            <button onclick="updateBranch()">Cập nhật</button>
+        </div>
+
+        <div class="section" style="margin-top: 25px; text-align:center;">
+            <button onclick="goBackProfile()">Quay lại Profile</button>
+            <button onclick="logout()" style="background:#d9534f; margin-top: 10px;">Logout</button>
+        </div>
+
+    </div>
+
+    <script src="../js/branches.js"></script>
+</body>
+</html>
+
