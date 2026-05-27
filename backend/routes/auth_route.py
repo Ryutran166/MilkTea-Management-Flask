@@ -32,6 +32,9 @@ auth_bp = Blueprint(
 
 
 
+
+
+
 # =========================
 # REGISTER
 # =========================
@@ -291,9 +294,6 @@ def me():
 def create_user():
 
     data = request.get_json() or {}
-
-
-
     username = (data.get("username") or "").strip()
     password = data.get("password")
     full_name = (data.get("full_name") or "").strip()
@@ -386,6 +386,107 @@ def get_user_by_id(user_id: int):
 
 
 @auth_bp.route(
+    "/users/<int:user_id>",
+    methods=["PUT"]
+)
+@jwt_required()
+@role_required(["admin"])
+def update_user_by_id(user_id: int):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "full_name" in data:
+
+        full_name = (data.get("full_name") or "").strip()
+        if not full_name:
+            return jsonify({
+                "success": False,
+                "message": "Field 'full_name' cannot be empty"
+            }), 400
+        user.full_name = full_name
+
+    if "phone" in data:
+        phone = (data.get("phone") or "").strip() or None
+        user.phone = phone
+
+    if "role" in data:
+        role = (data.get("role") or "").strip()
+        if role not in ["manager", "staff"]:
+            return jsonify({
+                "success": False,
+                "message": "Invalid role. Only 'manager' and 'staff' are allowed"
+            }), 400
+        user.role = role
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "User updated successfully",
+        "data": {
+            "id": user.id,
+            "username": user.username,
+            "full_name": user.full_name,
+            "phone": user.phone,
+            "role": user.role,
+            "branch_id": user.branch_id,
+            "status": user.status,
+        }
+    }), 200
+
+
+@auth_bp.route(
+    "/users/<int:user_id>/status",
+    methods=["PATCH"]
+)
+@jwt_required()
+@role_required(["admin"])
+def update_user_status(user_id: int):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "status" not in data:
+        return jsonify({
+            "success": False,
+            "message": "Missing required field: status"
+        }), 400
+
+    status = data.get("status")
+
+    # Parse bool-ish values
+    if isinstance(status, str):
+        status = status.strip().lower() in ["true", "1", "yes", "y", "on"]
+    else:
+        status = bool(status)
+
+    user.status = status
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "User status updated successfully",
+        "data": {
+            "id": user.id,
+            "status": user.status,
+        }
+    }), 200
+
+
+@auth_bp.route(
     "/auth/change-password",
     methods=["PUT"]
 )
@@ -393,14 +494,11 @@ def get_user_by_id(user_id: int):
 def change_password():
 
 
-
-
-
-
-
     data = request.get_json() or {}
 
+
     old_password = data.get("old_password")
+
     new_password = data.get("new_password")
     confirm_password = data.get("confirm_password")
 
@@ -444,5 +542,113 @@ def change_password():
         "success": True,
         "message": "Password changed successfully"
     }), 200
+
+
+# =========================
+# PATCH: ADMIN - CHANGE USER BRANCH
+# =========================
+
+@auth_bp.route(
+    "/users/<int:user_id>/branch",
+    methods=["PATCH"]
+)
+@jwt_required()
+@role_required(["admin"])
+def change_user_branch(user_id: int):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "branch_id" not in data:
+        return jsonify({
+            "success": False,
+            "message": "Missing required field: branch_id"
+        }), 400
+
+    branch_id = data.get("branch_id")
+
+    # allow null to clear branch (optional, not specified)
+    if branch_id is None:
+        user.branch_id = None
+        db.session.commit()
+        return jsonify({
+            "success": True,
+            "message": "User branch updated successfully",
+            "data": {
+                "id": user.id,
+                "branch_id": user.branch_id
+            }
+        }), 200
+
+    b = Branch.query.get(branch_id)
+    if not b:
+        return jsonify({
+            "success": False,
+            "message": "Branch not found"
+        }), 404
+
+    user.branch_id = branch_id
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "User branch updated successfully",
+        "data": {
+            "id": user.id,
+            "branch_id": user.branch_id
+        }
+    }), 200
+
+
+# =========================
+# PATCH: ADMIN - RESET USER PASSWORD
+# =========================
+
+@auth_bp.route(
+    "/users/<int:user_id>/reset-password",
+    methods=["PATCH"]
+)
+@jwt_required()
+@role_required(["admin"])
+def reset_user_password(user_id: int):
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({
+            "success": False,
+            "message": "User not found"
+        }), 404
+
+    data = request.get_json(silent=True) or {}
+
+    new_password = data.get("new_password")
+    confirm_password = data.get("confirm_password")
+
+    if not new_password or not confirm_password:
+        return jsonify({
+            "success": False,
+            "message": "Missing required fields: new_password, confirm_password"
+        }), 400
+
+    if new_password != confirm_password:
+        return jsonify({
+            "success": False,
+            "message": "New password and confirm password do not match"
+        }), 400
+
+    user.password = hash_password(new_password)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Password reset successfully"
+    }), 200
+
 
 
