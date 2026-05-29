@@ -164,6 +164,30 @@ def update_branch(branch_id: int):
     })
 
 
+@branches_bp.route("/branches/<int:branch_id>/status", methods=["PATCH"])
+@jwt_required()
+@role_required(["admin"])
+def toggle_branch_status(branch_id: int):
+    b = Branch.query.get(branch_id)
+    if not b:
+        return jsonify({
+            "success": False,
+            "message": "Branch not found"
+        }), 404
+
+    b.status = not b.status
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Branch status updated successfully",
+        "data": {
+            "id": b.id,
+            "status": b.status,
+        }
+    })
+
+
 @branches_bp.route("/branches/<int:branch_id>", methods=["DELETE"])
 @jwt_required()
 @role_required(["admin"])
@@ -175,6 +199,15 @@ def delete_branch(branch_id: int):
             "message": "Branch not found"
         }), 404
 
+    # Không cho xóa chi nhánh khi còn nhân viên đang hoạt động (User.status=True)
+    active_staff_count = User.query.filter_by(branch_id=branch_id, status=True).count()
+    if active_staff_count > 0:
+        return jsonify({
+            "success": False,
+            "message": "Cannot delete branch because it still has active employees",
+            "active_staff_count": active_staff_count
+        }), 409
+
     db.session.delete(b)
     db.session.commit()
 
@@ -182,4 +215,6 @@ def delete_branch(branch_id: int):
         "success": True,
         "message": "Branch deleted successfully"
     })
+
+
 

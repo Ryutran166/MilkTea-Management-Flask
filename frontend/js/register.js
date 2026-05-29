@@ -8,7 +8,7 @@ registerForm.addEventListener("submit", async (event) => {
     const phone = document.getElementById("phone").value.trim();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
+
 
     messageEl.innerText = "";
 
@@ -23,8 +23,8 @@ registerForm.addEventListener("submit", async (event) => {
                 phone,
                 username,
                 password,
-                role
             })
+
         });
 
         const data = await response.json();

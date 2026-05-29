@@ -175,8 +175,7 @@ CREATE TABLE sizes (
     extra_price NUMERIC(10,2) DEFAULT 0
     CHECK(extra_price >= 0),
 
-    multiplier NUMERIC(10,2) DEFAULT 1
-    CHECK(multiplier > 0)
+  
 );
 
 -- =========================================
@@ -235,15 +234,6 @@ CREATE TABLE orders (
 
     payment_method VARCHAR(50)
     CHECK(payment_method IN ('cash', 'momo', 'banking', 'vnpay')),
-
-    order_status VARCHAR(50)
-    DEFAULT 'pending'
-    CHECK(order_status IN (
-        'pending',
-        'paid',
-        'completed',
-        'cancelled'
-    )),
 
     created_at TIMESTAMP DEFAULT NOW(),
 
@@ -556,6 +546,26 @@ CREATE TABLE payments (
     ON DELETE CASCADE
 );
 
+
+CREATE TABLE product_toppings (
+    id SERIAL PRIMARY KEY,
+
+    product_id INT NOT NULL,
+    topping_id INT NOT NULL,
+
+    CONSTRAINT fk_product_toppings_product
+        FOREIGN KEY (product_id)
+        REFERENCES products(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_product_toppings_topping
+        FOREIGN KEY (topping_id)
+        REFERENCES toppings(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_product_topping
+        UNIQUE (product_id, topping_id)
+);
 -- =========================================
 -- INDEXES
 -- =========================================

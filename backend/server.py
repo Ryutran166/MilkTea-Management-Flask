@@ -9,6 +9,28 @@ from config.db import db
 from routes.auth_route import auth_bp
 from routes.test_route import test_bp
 from routes.branches_route import branches_bp
+from routes.products_route import products_bp
+from routes.categories_route import categories_bp
+from routes.sizes_route import sizes_bp
+from routes.toppings_route import toppings_bp
+from routes.orders_route import orders_bp
+
+
+# Ensure models are registered before db.create_all()
+
+from models import (  # noqa: F401
+    Branch,
+    User,
+    RefreshToken,
+    Category,
+    Product,
+    Size,
+    Topping,
+    ProductSize,
+    Order,
+    OrderItem,
+    OrderItemTopping,
+)
 
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -88,10 +110,16 @@ def home():
 app.register_blueprint(auth_bp)
 app.register_blueprint(test_bp)
 app.register_blueprint(branches_bp)
-
+app.register_blueprint(products_bp)
+app.register_blueprint(categories_bp)
+app.register_blueprint(sizes_bp)
+app.register_blueprint(toppings_bp)
+app.register_blueprint(orders_bp)
 
 with app.app_context():
     db.create_all()
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

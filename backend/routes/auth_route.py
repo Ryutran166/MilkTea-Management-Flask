@@ -51,7 +51,10 @@ def register():
     password = data.get("password")
     full_name = data.get("full_name")
     phone = data.get("phone")
-    role = data.get("role")
+    # Người dùng không được tự chọn role khi register
+    # Role mặc định cho self-register
+    role = "staff"
+
 
     existing_user = User.query.filter_by(
         username=username
